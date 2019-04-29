@@ -1,8 +1,9 @@
 import requests
 import time
 import RPi.GPIO as GPIO
-from input import record
-from fileDownload import *
+from input import *
+from fileDownload import downloadFile
+import os
 
 # SPEAKER SIDE
 # Status List:
@@ -20,6 +21,7 @@ def updateStatus():
     
 
 def main():
+    print("ready")
     STATUS_LIST = ["idle", "speaker", "listener", "feedback"]
     HEROKU_URL = "http://the-untold.herokuapp.com/status/5cc1ab8dfb6fc0265f2903a3"
     bucket = 'the-untold'
@@ -35,8 +37,10 @@ def main():
             if status == STATUS_LIST[1]:
                 print("SPEAKER Speaker currently speaking")
                 # DO THE RECORDING, and EMOTION DETECTOR CODE HERE
-                time.sleep(10)
-                emotion = "sad"
+                #record()
+                #emotion = detect_emotions(speech_to_text("story.wav"))
+                #os.remove("story.wav")
+                emotion = "Sadness"
                 requests.put(HEROKU_URL, json={
                     "status": STATUS_LIST[2],
                     "emotion": emotion
@@ -54,7 +58,7 @@ def main():
                 emotion = r.json()[0]['emotion']
                 print("filename is {}".format(filename))
                 #DO play feedback and other recorded msg
-                fileDownload.downloadFile(bucket, emotion, filename)
+                downloadFile(bucket, emotion, filename)
                 requests.put(HEROKU_URL, json={
                     "status": STATUS_LIST[0],
                     })

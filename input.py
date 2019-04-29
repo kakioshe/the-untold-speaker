@@ -49,7 +49,7 @@ def detect_emotions(text):
     tone_analysis = tone_analyzer.tone({'text': text},content_type='application/json').get_result()
     for i in tone_analysis['document_tone']['tones']:
         emotions.append((i['tone_name']))  
-    return emotions
+    return emotions[0]
 
 tone_analyzer = ToneAnalyzerV3(
     version='2017-09-21',
