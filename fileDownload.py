@@ -5,13 +5,13 @@ import wave
 import time
 import os
 
-def playAudio(fileName):
+def playAudio(fileName, channel = 2):
     chunk = 1024
-    wf = wave.open('1.1.wav', 'rb')
+    wf = wave.open(fileName, 'rb')
     p = pyaudio.PyAudio()
 
     form_1 = pyaudio.paInt16
-    chans = 2
+    chans = channel
     samp_rate = 44100
     chunk = 4096
     dev_index = 2
@@ -34,9 +34,13 @@ def playAudio(fileName):
     return True
 
 def downloadFile(bucketName, emotion, fileName):
-    s3 = boto3.resource('s3')
-    s3_client = boto3.client('s3')
-    
+    s3 = boto3.resource('s3',
+                        aws_access_key_id = os.environ['ACCESS_ID'],
+                        aws_secret_access_key = os.environ['ACCESS_KEY'])
+    s3_client = boto3.client('s3',
+                        aws_access_key_id = os.environ['ACCESS_ID'],
+                        aws_secret_access_key = os.environ['ACCESS_KEY'])
+
     myBucket = s3.Bucket(bucketName)
     fileDir = "{}/{}".format(emotion,fileName)
     files = []
@@ -54,13 +58,17 @@ def downloadFile(bucketName, emotion, fileName):
             randomizedFiles.append(files[x-1])
 
     print(randomizedFiles)
+
+    n = 0
     for audio in randomizedFiles:
-        audioName = audio.split("/")[1]
-        print("length : ",len(audioName))
-        print(audioName)
-        s3_client.download_file(bucketName, audio, audioName)
-        playAudio(audioName)
-        os.remove(audioName)
+        audioName = 'sound/' + audio
+        if n == 0:
+            s3_client.download_file(bucketName, audio, audioName)
+        try:
+            playAudio(audioName, 1)
+        except:
+            print("file didn't exist")
+            s3_client.download_file(bucketName, audio, audioName)
+            playAudio(audioName, 1)
+        n += 1
     return True
-
-
